@@ -4,506 +4,597 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AMSA × n8n — Automatización de Manifiestos 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;1,400&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'Roboto Mono', ui-monospace, 'SF Mono', 'Consolas', monospace;
-  --bg-primary:   #ffffff;
-  --bg-secondary: #f5f5f4;
-  --bg-tertiary:  #eeede9;
-  --text-primary:   #1a1a18;
-  --text-secondary: #4a4a47;
-  --text-tertiary:  #8a8a85;
-  --border-weak:   rgba(0,0,0,.08);
-  --border-medium: rgba(0,0,0,.15);
-  --border-strong: rgba(0,0,0,.28);
-  --bg-ok:    #f0faf3; --text-ok:    #1a6b3c; --border-ok:    rgba(26,107,60,.25);
-  --bg-warn:  #fdf8ed; --text-warn:  #92580a; --border-warn:  rgba(146,88,10,.25);
-  --bg-err:   #fdf2f2; --text-err:   #991b1b; --border-err:   rgba(153,27,27,.25);
-  --bg-neu:   #f5f5f4; --text-neu:   #4a4a47; --border-neu:   rgba(0,0,0,.15);
-  --bg-info:  #eff6ff; --text-info:  #1e40af; --border-info:  rgba(30,64,175,.25);
-  --r-sm: 6px; --r-md: 8px; --r-lg: 12px;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Roboto Mono', ui-monospace, monospace;
+
+  --bg:        #ffffff;
+  --bg-2:      #f7f7f6;
+  --bg-3:      #efefed;
+
+  --t1: #111110;
+  --t2: #4a4a47;
+  --t3: #8e8e89;
+
+  --b1: rgba(0,0,0,.07);
+  --b2: rgba(0,0,0,.13);
+  --b3: rgba(0,0,0,.26);
+
+  /* semánticos */
+  --ok-bg: #f0faf3;  --ok-t: #1a6b3c;  --ok-b: rgba(26,107,60,.22);
+  --wn-bg: #fdf8ed;  --wn-t: #92580a;  --wn-b: rgba(146,88,10,.22);
+  --er-bg: #fdf2f2;  --er-t: #991b1b;  --er-b: rgba(153,27,27,.22);
+  --ne-bg: #f7f7f6;  --ne-t: #4a4a47;  --ne-b: rgba(0,0,0,.13);
+  --in-bg: #eff6ff;  --in-t: #1e40af;  --in-b: rgba(30,64,175,.22);
+
+  /* flujo tag colors */
+  --c-manual:  #1a1a18;
+  --c-simel:   #0d6e6e;
+  --c-wa:      #92580a;
+
+  --r: 8px; --r-lg: 12px; --r-xl: 16px;
 }
 
 html, body {
-  height: 100%;
+  min-height: 100vh; height: 100%;
   font-family: var(--font-sans);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
+  background: var(--bg-3);
+  color: var(--t1);
   -webkit-font-smoothing: antialiased;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
   padding: 24px 16px;
 }
 
+/* ─── SHELL ─── */
 .shell {
-  display: grid;
-  grid-template-rows: 48px 1fr 48px;
-  width: 100%;
-  max-width: 780px;
-  height: 560px;
-  background: var(--bg-primary);
-  border: 0.5px solid var(--border-medium);
-  border-radius: var(--r-lg);
+  width: 100%; max-width: 820px; height: 580px;
+  background: var(--bg);
+  border: 0.5px solid var(--b2);
+  border-radius: var(--r-xl);
   overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.06);
+  box-shadow: 0 6px 32px rgba(0,0,0,.09), 0 1px 4px rgba(0,0,0,.05);
+  display: grid;
+  grid-template-rows: 46px 1fr 46px;
 }
 
+/* ─── TOP BAR ─── */
 .topbar {
-  display: flex; align-items: center; padding: 0 20px; gap: 12px;
-  border-bottom: 0.5px solid var(--border-weak); background: var(--bg-primary);
+  display: flex; align-items: center; padding: 0 20px; gap: 16px;
+  border-bottom: 0.5px solid var(--b1);
 }
-.brand { display: flex; align-items: center; gap: 8px; }
-.brand-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-primary); }
-.brand-name { font-size: 13px; font-weight: 500; color: var(--text-primary); letter-spacing: -.2px; }
-.brand-sep { color: var(--text-tertiary); margin: 0 1px; }
-.topbar-gap { flex: 1; }
-.slide-counter { font-family: var(--font-mono); font-size: 11px; color: var(--text-tertiary); }
+.brand { display: flex; align-items: center; gap: 7px; }
+.brand-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--t1); }
+.brand-name { font-size: 12.5px; font-weight: 500; letter-spacing: -.1px; }
+.brand-sep { color: var(--t3); margin: 0 1px; font-weight: 300; }
 
+/* legend */
+.legend { display: flex; gap: 14px; }
+.leg { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--t3); font-family: var(--font-mono); }
+.leg-dot { width: 7px; height: 7px; border-radius: 2px; }
+.ld-manual { background: var(--c-manual); }
+.ld-simel  { background: var(--c-simel); }
+.ld-wa     { background: #d97706; }
+
+.tgap { flex: 1; }
+.counter { font-family: var(--font-mono); font-size: 11px; color: var(--t3); }
+
+/* ─── STAGE ─── */
 .stage { overflow: hidden; min-height: 0; }
 
-/* todas las slides menos s5 */
 .slide {
   display: none; height: 100%;
-  padding: 24px 28px 16px;
-  overflow-y: auto;
+  padding: 22px 26px 16px;
   flex-direction: column; gap: 14px;
+  overflow-y: auto;
 }
-.slide.active { display: flex; animation: fadeUp .22s ease; }
-@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.slide.active { display: flex; animation: up .2s ease; }
+@keyframes up { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 .slide::-webkit-scrollbar { width: 3px; }
-.slide::-webkit-scrollbar-thumb { background: var(--border-weak); border-radius: 2px; }
+.slide::-webkit-scrollbar-thumb { background: var(--b1); border-radius: 2px; }
 
-/* slide 5 no hace scroll — el chat ocupa el espacio restante */
-#s5 { overflow: hidden; gap: 10px; }
+/* slide 1 centered */
+#s1 { justify-content: center; }
 
+/* ─── BOTTOM BAR ─── */
 .bottombar {
   display: flex; align-items: center; padding: 0 20px; gap: 10px;
-  border-top: 0.5px solid var(--border-weak); background: var(--bg-primary);
+  border-top: 0.5px solid var(--b1);
 }
-.dots { display: flex; gap: 5px; align-items: center; }
+.dots { display: flex; gap: 5px; }
 .dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--border-medium); cursor: pointer; transition: all .18s; border: none; padding: 0;
+  background: var(--b2); border: none; padding: 0; cursor: pointer; transition: all .16s;
 }
-.dot.a { background: var(--text-primary); width: 16px; border-radius: 3px; }
-.bbar-gap { flex: 1; }
-.nbtn {
+.dot.a { background: var(--t1); width: 16px; border-radius: 3px; }
+.bgap { flex: 1; }
+.btn {
   font-family: var(--font-sans); font-size: 12px; font-weight: 500;
-  color: var(--text-secondary); background: none;
-  border: 0.5px solid var(--border-medium); padding: 5px 14px;
-  border-radius: var(--r-md); cursor: pointer; transition: all .15s;
+  padding: 5px 14px; border-radius: var(--r); cursor: pointer; transition: all .15s;
+  color: var(--t2); background: none; border: 0.5px solid var(--b2);
 }
-.nbtn:hover { color: var(--text-primary); border-color: var(--border-strong); background: var(--bg-secondary); }
-.nbtn-primary { background: var(--text-primary); color: var(--bg-primary); border-color: transparent; }
-.nbtn-primary:hover { opacity: .82; }
+.btn:hover { color: var(--t1); border-color: var(--b3); background: var(--bg-2); }
+.btn-p { background: var(--t1); color: var(--bg); border-color: transparent; }
+.btn-p:hover { opacity: .82; }
 
-.eyebrow {
-  font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary);
-  letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 2px;
+/* ─── TYPOGRAPHY ─── */
+.eye {
+  font-family: var(--font-mono); font-size: 10px; color: var(--t3);
+  letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 3px;
 }
-.h1 { font-size: 20px; font-weight: 500; color: var(--text-primary); line-height: 1.2; letter-spacing: -.3px; }
-.h1 em { font-style: normal; color: var(--text-secondary); }
-.body-sm { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+.h1 { font-size: 20px; font-weight: 500; line-height: 1.2; letter-spacing: -.3px; }
+.h1 em { font-style: normal; color: var(--t2); }
+.body { font-size: 12.5px; color: var(--t2); line-height: 1.65; }
 
+/* ─── BADGE ─── */
 .badge {
   display: inline-flex; align-items: center;
-  font-family: var(--font-mono); font-size: 10px;
-  padding: 3px 8px; border-radius: var(--r-sm); border: 0.5px solid; white-space: nowrap;
+  font-family: var(--font-mono); font-size: 10px; white-space: nowrap;
+  padding: 3px 8px; border-radius: 5px; border: 0.5px solid;
 }
-.badge-ok   { background: var(--bg-ok);   color: var(--text-ok);   border-color: var(--border-ok); }
-.badge-warn { background: var(--bg-warn); color: var(--text-warn); border-color: var(--border-warn); }
-.badge-err  { background: var(--bg-err);  color: var(--text-err);  border-color: var(--border-err); }
-.badge-neu  { background: var(--bg-neu);  color: var(--text-neu);  border-color: var(--border-neu); }
-.badge-info { background: var(--bg-info); color: var(--text-info); border-color: var(--border-info); }
+.b-ok { background:var(--ok-bg); color:var(--ok-t); border-color:var(--ok-b); }
+.b-wn { background:var(--wn-bg); color:var(--wn-t); border-color:var(--wn-b); }
+.b-er { background:var(--er-bg); color:var(--er-t); border-color:var(--er-b); }
+.b-ne { background:var(--ne-bg); color:var(--ne-t); border-color:var(--ne-b); }
+.b-in { background:var(--in-bg); color:var(--in-t); border-color:var(--in-b); }
 
-.list-plain { list-style: none; display: flex; flex-direction: column; gap: 5px; }
-.list-plain li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-.bullet { width: 4px; height: 4px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; margin-top: 6px; }
-.bullet-ok   { background: var(--text-ok); }
-.bullet-warn { background: var(--text-warn); }
-.bullet-err  { background: var(--text-err); }
+/* ─── TAG CHIPS (flujo) ─── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--font-mono); font-size: 10px; padding: 3px 9px;
+  border-radius: 5px; border: 0.5px solid; white-space: nowrap;
+}
+.tag-m { background: rgba(17,17,16,.06); color: var(--c-manual);  border-color: rgba(17,17,16,.2); }
+.tag-s { background: rgba(13,110,110,.07); color: var(--c-simel);   border-color: rgba(13,110,110,.22); }
+.tag-w { background: rgba(217,119,6,.08);  color: #92580a;          border-color: rgba(217,119,6,.22); }
 
-.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+/* ─── BULLET LIST ─── */
+.ul { list-style: none; display: flex; flex-direction: column; gap: 5px; }
+.ul li { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; color: var(--t2); line-height: 1.5; }
+.dot-b { width: 4px; height: 4px; border-radius: 50%; background: var(--b3); flex-shrink:0; margin-top:6px; }
+.dot-ok { background: var(--ok-t); }
+.dot-wn { background: var(--wn-t); }
+.dot-er { background: var(--er-t); }
 
-.node-row { display: flex; align-items: flex-start; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; }
+/* ─── GRID ─── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--bg-2); border: 0.5px solid var(--b1);
+  border-radius: var(--r-lg); padding: 13px 15px;
+}
+.card-ttl { font-size: 12.5px; font-weight: 500; margin-bottom: 4px; }
+.card-sub { font-size: 11.5px; color: var(--t2); line-height: 1.5; }
+
+/* ─── SECTION LABEL ─── */
+.slabel { font-family: var(--font-mono); font-size: 10px; color: var(--t3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+
+/* ─── INSIGHT ─── */
+.insight { border-left: 2px solid var(--t1); padding: 9px 13px; background: var(--bg-2); border-radius: 0 var(--r) var(--r) 0; }
+.insight p { font-size: 12.5px; color: var(--t2); line-height: 1.6; }
+.insight p strong { font-weight: 500; color: var(--t1); }
+
+/* ─── STEP ROW (nodes) ─── */
+.node-row { display: flex; align-items: flex-start; overflow-x: auto; padding-bottom: 2px; }
 .node-row::-webkit-scrollbar { height: 3px; }
-.node-row::-webkit-scrollbar-thumb { background: var(--border-weak); border-radius: 2px; }
-.node { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; }
-.node-box {
-  width: 52px; height: 44px; border-radius: var(--r-md);
-  border: 0.5px solid var(--border-medium); background: var(--bg-primary);
+.node-row::-webkit-scrollbar-thumb { background: var(--b1); border-radius: 2px; }
+.node { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.nbox {
+  width: 50px; height: 42px; border-radius: var(--r);
+  border: 0.5px solid var(--b2); background: var(--bg);
   display: flex; align-items: center; justify-content: center; position: relative;
-  font-size: 13px; font-family: var(--font-mono); color: var(--text-secondary); font-weight: 500;
-  transition: transform .15s;
+  font-family: var(--font-mono); font-size: 12px; color: var(--t2); font-weight: 500;
+  transition: transform .14s;
 }
-.node-box:hover { transform: scale(1.06); }
-.node-box.trigger { border-color: var(--border-strong); background: var(--bg-secondary); }
-.type-dot { position: absolute; top: -4px; right: -4px; width: 8px; height: 8px; border-radius: 50%; border: 1.5px solid var(--bg-primary); }
-.td-trigger { background: var(--text-primary); }
-.td-ai      { background: var(--text-info); }
-.td-db      { background: var(--text-ok); }
-.td-wa      { background: var(--text-warn); }
-.td-out     { background: var(--text-tertiary); }
-.node-lbl { font-size: 10px; color: var(--text-tertiary); text-align: center; max-width: 58px; line-height: 1.3; }
-.node-lbl b { font-weight: 500; color: var(--text-secondary); font-size: 10.5px; }
-.arrow { display: flex; align-items: center; flex-shrink: 0; margin-bottom: 18px; padding: 0 3px; }
-.arrow-line { width: 18px; height: 0.5px; background: var(--border-medium); }
-.arrow-head { width: 0; height: 0; border-top: 3px solid transparent; border-bottom: 3px solid transparent; border-left: 5px solid var(--border-medium); }
+.nbox:hover { transform: scale(1.07); }
+.nbox.hi { border-color: var(--b3); background: var(--bg-2); }
+.ndot { position: absolute; top:-4px; right:-4px; width:8px; height:8px; border-radius:50%; border:1.5px solid var(--bg); }
+.nd-t { background: var(--t1); }
+.nd-a { background: var(--in-t); }
+.nd-d { background: var(--ok-t); }
+.nd-w { background: #d97706; }
+.nd-o { background: var(--t3); }
+.nlbl { font-size: 10px; color: var(--t3); text-align: center; max-width: 56px; line-height: 1.25; }
+.nlbl b { font-size: 10.5px; font-weight: 500; color: var(--t2); }
+.arr { display: flex; align-items: center; flex-shrink: 0; margin-bottom: 16px; padding: 0 2px; }
+.aline { width: 16px; height: 0.5px; background: var(--b2); }
+.ahead { width:0; height:0; border-top:3px solid transparent; border-bottom:3px solid transparent; border-left:5px solid var(--b2); }
 
-.step-list { display: flex; flex-direction: column; }
-.step { display: flex; gap: 14px; padding: 10px 0; border-bottom: 0.5px solid var(--border-weak); }
+/* ─── STEP LIST ─── */
+.steps { display: flex; flex-direction: column; }
+.step { display: flex; gap: 13px; padding: 9px 0; border-bottom: 0.5px solid var(--b1); }
 .step:last-child { border-bottom: none; }
-.step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 28px; }
-.step-num {
-  width: 28px; height: 28px; border-radius: 50%;
-  border: 0.5px solid var(--border-medium); background: var(--bg-secondary);
+.sl { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 26px; }
+.snum {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: 0.5px solid var(--b2); background: var(--bg-2);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 11px; color: var(--t2); flex-shrink:0;
 }
-.step-line { width: 0.5px; flex: 1; min-height: 10px; background: var(--border-weak); margin-top: 3px; }
-.step-body { flex: 1; }
-.step-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; line-height: 1.3; }
-.step-sub   { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-.step-badges { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.sline { width:0.5px; flex:1; min-height:8px; background: var(--b1); margin-top:3px; }
+.sb { flex: 1; }
+.sttl { font-size: 13px; font-weight: 500; margin-bottom: 2px; line-height: 1.3; }
+.ssub { font-size: 12px; color: var(--t2); line-height: 1.5; }
+.stags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
 
-.actor-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-.actor { border: 0.5px solid var(--border-weak); border-radius: var(--r-lg); padding: 16px 14px; text-align: center; background: var(--bg-primary); }
-.actor.amsa { border-color: var(--border-medium); background: var(--bg-secondary); }
-.actor-initial {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: var(--bg-secondary); border: 0.5px solid var(--border-medium);
+/* ─── NODE CHIPS (inline tag row) ─── */
+.chip-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11.5px; color: var(--t2);
+  background: var(--bg-2); border: 0.5px solid var(--b1);
+  padding: 4px 10px; border-radius: var(--r); white-space: nowrap;
+}
+.chip-icon { font-size: 13px; }
+
+/* ─── ACTOR GRID ─── */
+.actor { border: 0.5px solid var(--b1); border-radius: var(--r-lg); padding: 14px; text-align: center; background: var(--bg); }
+.actor.hi { border-color: var(--b2); background: var(--bg-2); }
+.act-ini {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--bg-2); border: 0.5px solid var(--b2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 500; color: var(--text-primary); margin: 0 auto 10px;
+  font-size: 12px; font-weight: 500; margin: 0 auto 8px;
 }
-.actor.amsa .actor-initial { background: var(--text-primary); color: var(--bg-primary); }
-.actor-role { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 4px; }
-.actor-desc { font-size: 11.5px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 8px; }
-.actor-caa { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); padding: 3px 8px; border: 0.5px solid var(--border-weak); border-radius: var(--r-sm); display: inline-block; }
+.actor.hi .act-ini { background: var(--t1); color: var(--bg); }
+.act-role { font-size: 12.5px; font-weight: 500; margin-bottom: 3px; }
+.act-desc { font-size: 11px; color: var(--t2); line-height: 1.4; margin-bottom: 7px; }
+.act-caa { font-family: var(--font-mono); font-size: 10px; color: var(--t3); padding: 2px 7px; border: 0.5px solid var(--b1); border-radius: 5px; display: inline-block; }
 
-.insight { border-left: 2px solid var(--text-primary); padding: 10px 14px; background: var(--bg-secondary); border-radius: 0 var(--r-sm) var(--r-sm) 0; }
-.insight-text { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
-.insight-text strong { font-weight: 500; color: var(--text-primary); }
-
-.stack-list { display: flex; flex-direction: column; gap: 7px; }
-.stack-row {
-  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-  border: 0.5px solid var(--border-weak); border-radius: var(--r-md); background: var(--bg-primary); transition: border-color .15s;
+/* ─── STACK ─── */
+.stack-list { display: flex; flex-direction: column; gap: 6px; }
+.srow {
+  display: flex; align-items: center; gap: 11px; padding: 9px 13px;
+  border: 0.5px solid var(--b1); border-radius: var(--r); background: var(--bg); transition: border-color .14s;
 }
-.stack-row:hover { border-color: var(--border-medium); }
-.stack-icon {
-  width: 32px; height: 32px; border-radius: var(--r-md);
-  background: var(--bg-secondary); border: 0.5px solid var(--border-weak);
+.srow:hover { border-color: var(--b2); }
+.sico {
+  width: 30px; height: 30px; border-radius: var(--r);
+  background: var(--bg-2); border: 0.5px solid var(--b1);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-mono); font-size: 10px; font-weight: 500; color: var(--text-secondary); flex-shrink: 0;
+  font-family: var(--font-mono); font-size: 9.5px; font-weight: 500; color: var(--t2); flex-shrink: 0;
 }
-.stack-name { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 1px; }
-.stack-role { font-size: 11.5px; color: var(--text-secondary); }
+.sname { font-size: 12.5px; font-weight: 500; margin-bottom: 1px; }
+.srole { font-size: 11px; color: var(--t2); }
 
-.rm-phases { display: flex; flex-direction: column; gap: 8px; }
-.rm { border: 0.5px solid var(--border-weak); border-radius: var(--r-lg); padding: 14px 16px; background: var(--bg-primary); }
+/* ─── ROADMAP ─── */
+.rm-list { display: flex; flex-direction: column; gap: 8px; }
+.rm { border: 0.5px solid var(--b1); border-radius: var(--r-lg); padding: 13px 15px; }
 .rm-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.rm-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
-.rm-dur { font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); padding: 2px 8px; border: 0.5px solid var(--border-weak); border-radius: var(--r-sm); }
-.rm-items { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 16px; }
-.rm-item { font-size: 11.5px; color: var(--text-secondary); display: flex; gap: 6px; align-items: flex-start; line-height: 1.4; padding: 2px 0; }
-.rm-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--border-strong); flex-shrink: 0; margin-top: 7px; }
+.rm-name { font-size: 12.5px; font-weight: 500; }
+.rm-dur { font-family: var(--font-mono); font-size: 10px; color: var(--t3); padding: 2px 7px; border: 0.5px solid var(--b1); border-radius: 5px; }
+.rm-items { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 14px; }
+.rm-item { font-size: 11.5px; color: var(--t2); display: flex; gap: 5px; align-items: flex-start; line-height: 1.4; padding: 2px 0; }
+.rm-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--b3); flex-shrink: 0; margin-top: 7px; }
 
-/* ── Slide 5: layout dedicado ── */
-.s5-header { flex-shrink: 0; }
-.s5-desc   { flex-shrink: 0; font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
-.s5-body   {
-  flex: 1; min-height: 0;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
-}
-.s5-col-left {
-  display: flex; flex-direction: column; gap: 10px;
-  overflow-y: auto; min-height: 0;
-}
-.s5-col-left::-webkit-scrollbar { width: 3px; }
-.s5-col-left::-webkit-scrollbar-thumb { background: var(--border-weak); border-radius: 2px; }
-.s5-col-right {
-  display: flex; flex-direction: column; gap: 6px;
-  min-height: 0;
-}
+/* ─── DATA TABLE (CAA preview) ─── */
+.data-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.data-table th { font-weight: 500; color: var(--t3); font-family: var(--font-mono); font-size: 10px; text-align: left; padding: 5px 10px; border-bottom: 0.5px solid var(--b1); letter-spacing: .5px; text-transform: uppercase; }
+.data-table td { padding: 6px 10px; border-bottom: 0.5px solid var(--b1); color: var(--t1); }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td.muted { color: var(--t3); font-family: var(--font-mono); font-size: 11px; }
+.tbl-wrap { border: 0.5px solid var(--b1); border-radius: var(--r-lg); overflow: hidden; background: var(--bg-2); }
+.tbl-head { padding: 8px 12px; border-bottom: 0.5px solid var(--b1); display: flex; align-items: center; gap: 6px; background: var(--bg); }
+.tbl-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok-t); }
+.tbl-title { font-size: 11px; font-weight: 500; color: var(--t2); }
 
-.col-label { font-size: 10px; font-family: var(--font-mono); color: var(--text-tertiary); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
-
-/* chat: ocupa todo el espacio disponible en su columna */
-.chat-mock {
-  flex: 1; min-height: 0;
-  display: flex; flex-direction: column;
-  background: var(--bg-secondary);
-  border: 0.5px solid var(--border-weak);
-  border-radius: var(--r-lg); overflow: hidden;
+/* ─── CHAT ─── */
+#s5 { overflow: hidden; gap: 10px; }
+.s5-hd { flex-shrink: 0; }
+.s5-desc { flex-shrink: 0; font-size: 12.5px; color: var(--t2); line-height: 1.6; }
+.s5-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.s5-left { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; min-height: 0; }
+.s5-left::-webkit-scrollbar { width: 3px; }
+.s5-left::-webkit-scrollbar-thumb { background: var(--b1); border-radius: 2px; }
+.s5-right { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
+.chat {
+  flex: 1; min-height: 0; display: flex; flex-direction: column;
+  border: 0.5px solid var(--b1); border-radius: var(--r-lg); overflow: hidden;
 }
-.chat-hdr {
-  padding: 9px 14px; border-bottom: 0.5px solid var(--border-weak);
-  display: flex; align-items: center; gap: 8px;
-  background: var(--bg-primary); flex-shrink: 0;
-}
-.chat-avatar {
-  width: 26px; height: 26px; border-radius: 50%; background: var(--text-primary);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 500; color: var(--bg-primary); flex-shrink: 0;
-}
-.chat-name   { font-size: 12px; font-weight: 500; color: var(--text-primary); }
-.chat-status { font-size: 10px; color: var(--text-tertiary); }
-.chat-msgs {
-  padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
-  overflow-y: auto; flex: 1; min-height: 0;
-}
+.chat-hdr { padding: 8px 12px; border-bottom: 0.5px solid var(--b1); display: flex; align-items: center; gap: 8px; background: var(--bg); flex-shrink: 0; }
+.chat-av { width: 24px; height: 24px; border-radius: 50%; background: var(--t1); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: var(--bg); flex-shrink: 0; }
+.chat-name { font-size: 12px; font-weight: 500; }
+.chat-st { font-size: 10px; color: var(--t3); }
+.chat-msgs { padding: 10px 11px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; flex: 1; min-height: 0; background: var(--bg-2); }
 .chat-msgs::-webkit-scrollbar { width: 3px; }
-.chat-msgs::-webkit-scrollbar-thumb { background: var(--border-weak); border-radius: 2px; }
-.msg-in, .msg-out { display: flex; flex-direction: column; }
-.msg-out { align-items: flex-end; }
-.bubble { max-width: 88%; padding: 7px 10px; font-size: 11.5px; line-height: 1.5; color: var(--text-primary); }
-.bubble-in  { background: var(--bg-primary); border: 0.5px solid var(--border-weak); border-radius: 2px 8px 8px 8px; }
-.bubble-out { background: var(--text-primary); color: var(--bg-primary); border-radius: 8px 2px 8px 8px; }
-.msg-time { font-size: 9px; color: var(--text-tertiary); margin-top: 2px; }
+.chat-msgs::-webkit-scrollbar-thumb { background: var(--b1); border-radius: 2px; }
+.mi, .mo { display: flex; flex-direction: column; }
+.mo { align-items: flex-end; }
+.bub { max-width: 90%; padding: 7px 10px; font-size: 11.5px; line-height: 1.5; }
+.bi { background: var(--bg); border: 0.5px solid var(--b1); border-radius: 2px 8px 8px 8px; color: var(--t1); }
+.bo { background: var(--t1); color: var(--bg); border-radius: 8px 2px 8px 8px; }
+.bt { font-size: 9px; color: var(--t3); margin-top: 2px; }
+.prov-row { display: flex; gap: 5px; flex-shrink: 0; }
+.prov { flex: 1; border: 0.5px solid var(--b1); border-radius: var(--r); padding: 6px 8px; text-align: center; background: var(--bg); }
+.prov-n { font-size: 11px; font-weight: 500; margin-bottom: 1px; }
+.prov-d { font-size: 10px; color: var(--t2); }
 
-.provider-row { display: flex; gap: 6px; flex-shrink: 0; }
-.prov { flex: 1; border: 0.5px solid var(--border-weak); border-radius: var(--r-md); padding: 7px 8px; text-align: center; background: var(--bg-primary); }
-.prov-name   { font-size: 11px; font-weight: 500; color: var(--text-primary); margin-bottom: 2px; }
-.prov-detail { font-size: 10px; color: var(--text-secondary); }
+/* ─── METRICS (slide 1 & closing) ─── */
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.metric { background: var(--bg-2); border: 0.5px solid var(--b1); border-radius: var(--r-lg); padding: 14px 16px; text-align: center; }
+.metric-val { font-family: var(--font-mono); font-size: 26px; font-weight: 500; color: var(--t1); line-height: 1; margin-bottom: 4px; }
+.metric-lbl { font-size: 11px; color: var(--t3); line-height: 1.4; }
+
+/* closing paragraph */
+.closing { background: var(--bg-2); border: 0.5px solid var(--b1); border-radius: var(--r-lg); padding: 14px 16px; font-size: 12.5px; color: var(--t2); line-height: 1.7; }
 </style>
 </head>
 <body>
 <div class="shell">
 
+  <!-- TOP BAR -->
   <div class="topbar">
     <div class="brand">
       <div class="brand-dot"></div>
       <span class="brand-name">AMSA<span class="brand-sep"> × </span>n8n</span>
     </div>
-    <div class="topbar-gap"></div>
-    <span class="slide-counter" id="counter">1 / 7</span>
+    <div class="legend">
+      <span class="leg"><span class="leg-dot ld-manual"></span>Sin intervención manual</span>
+      <span class="leg"><span class="leg-dot ld-simel"></span>Sistema propio tipo SIMEL</span>
+      <span class="leg"><span class="leg-dot ld-wa"></span>WhatsApp · Fase 1</span>
+    </div>
+    <div class="tgap"></div>
+    <span class="counter" id="counter">1 / 9</span>
   </div>
 
+  <!-- STAGE -->
   <div class="stage">
 
-    <!-- SLIDE 1 -->
+    <!-- ── S1 · PORTADA ── -->
     <div class="slide active" id="s1">
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:center;max-width:560px">
-        <div class="eyebrow">Propuesta técnica · 2026</div>
-        <h1 class="h1" style="font-size:26px;margin-bottom:14px">Automatización de manifiestos<br><em>para AMSA</em></h1>
-        <p class="body-sm">Circuito completo SIMEL orquestado con n8n — desde el parseo del CAA hasta la confirmación de entrega del transportista. Sin papel, sin silos, sin intervención manual.</p>
+      <div>
+        <div class="eye">Propuesta técnica · 2026</div>
+        <h1 class="h1" style="font-size:26px;margin-bottom:12px">Automatización de manifiestos<br><em>para AMSA</em></h1>
+        <p class="body" style="max-width:500px">El sistema reconoce el CAA automáticamente, valida los tres actores, emite el manifiesto, coordina el viaje por WhatsApp y cierra el ciclo con certificados y trazabilidad — sin que ningún paso requiera intervención humana más allá de la carga inicial del PDF y la respuesta del transportista en campo.</p>
+      </div>
+      <div class="metrics" style="margin-top:6px">
+        <div class="metric"><div class="metric-val">0</div><div class="metric-lbl">Ingresos manuales por manifiesto</div></div>
+        <div class="metric"><div class="metric-val">&lt;60s</div><div class="metric-lbl">Del PDF del CAA al cliente habilitado</div></div>
+        <div class="metric"><div class="metric-val">100%</div><div class="metric-lbl">Trazabilidad auditada en Supabase</div></div>
       </div>
     </div>
 
-    <!-- SLIDE 2 -->
+    <!-- ── S2 · PASO 1 — Ingesta del CAA ── -->
     <div class="slide" id="s2">
-      <div><div class="eyebrow">02 — Diagnóstico</div><h1 class="h1">Estado actual del sistema</h1></div>
-      <div class="grid2">
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="badge badge-err">Crítico</span><span style="font-size:12px;font-weight:500">Silos detectados</span></div>
-          <ul class="list-plain">
-            <li><div class="bullet bullet-err"></div>Flujo A parsea CAA pero no guarda en base de datos</li>
-            <li><div class="bullet bullet-err"></div>Excel maestro en PC de ex-empleado (Tinch)</li>
-            <li><div class="bullet bullet-err"></div>Script Python desconectado del servidor n8n</li>
-            <li><div class="bullet bullet-err"></div>3 flujos sin estado compartido</li>
-          </ul>
-        </div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="badge badge-warn">Corregir</span><span style="font-size:12px;font-weight:500">Bugs conocidos</span></div>
-          <ul class="list-plain">
-            <li><div class="bullet bullet-warn"></div>role:"assistant" → debe ser "user" en nodo OpenAI</li>
-            <li><div class="bullet bullet-warn"></div>Catálogo CSC hardcodeado en nodo Code</li>
-            <li><div class="bullet bullet-warn"></div>3 webhooks sin token de autenticación</li>
-            <li><div class="bullet bullet-warn"></div>Ruta C:\Users\tinch\Escritorio en producción</li>
-          </ul>
-        </div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="badge badge-ok">Conservar</span><span style="font-size:12px;font-weight:500">Funciona bien</span></div>
-          <ul class="list-plain">
-            <li><div class="bullet bullet-ok"></div>GPT-4o-mini extrae campos del CAA con IA</li>
-            <li><div class="bullet bullet-ok"></div>13 corrientes CSC mapeadas (Y8, Y9, Y12…)</li>
-            <li><div class="bullet bullet-ok"></div>Instancia n8n Cloud activa — amsa3729</li>
-            <li><div class="bullet bullet-ok"></div>Credenciales OpenAI configuradas</li>
-          </ul>
-        </div>
-        <div>
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px"><span class="badge badge-neu">Contexto</span><span style="font-size:12px;font-weight:500">Operación hoy</span></div>
-          <ul class="list-plain">
-            <li><div class="bullet"></div>6–7 manifiestos/día de forma manual</li>
-            <li><div class="bullet"></div>~200 manifiestos/mes en cartera</li>
-            <li><div class="bullet"></div>300 clientes · 50 activos · resto eventuales</li>
-            <li><div class="bullet"></div>Datos reales: CNEA, JC Lorenzo</li>
-          </ul>
-        </div>
+      <div>
+        <div class="eye">Paso 1</div>
+        <h1 class="h1">Ingesta del certificado — PDF del CAA</h1>
+      </div>
+      <p class="body">El operador de AMSA sube el PDF del CAA del cliente por formulario web. También puede llegar por email o WhatsApp. n8n lo recibe vía webhook.</p>
+      <div class="chip-row">
+        <div class="chip"><span class="chip-icon">📋</span>Form trigger (n8n) — Sube PDF del CAA</div>
+        <div class="chip"><span class="chip-icon">💬</span>WhatsApp entrada — Cliente envía foto del CAA</div>
+        <div class="chip"><span class="chip-icon">📧</span>Email parser — Adjunto PDF en Gmail</div>
+      </div>
+      <div class="node-row" style="margin-top:4px">
+        <div class="node"><div class="nbox hi">WH<div class="ndot nd-t"></div></div><div class="nlbl"><b>Webhook</b><br>trigger</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox hi">FM<div class="ndot nd-t"></div></div><div class="nlbl"><b>Form</b><br>web</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox">📧<div class="ndot nd-t"></div></div><div class="nlbl"><b>Gmail</b><br>parser</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox">💬<div class="ndot nd-w"></div></div><div class="nlbl"><b>WhatsApp</b><br>entrada</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox hi">PDF<div class="ndot nd-t"></div></div><div class="nlbl"><b>Recibe</b><br>PDF</div></div>
+      </div>
+      <div class="stags">
+        <span class="tag tag-m">Sin intervención manual</span>
+        <span class="tag tag-s">Ya existe en el JSON</span>
       </div>
     </div>
 
-    <!-- SLIDE 3 -->
+    <!-- ── S3 · PASO 2 — Reconocimiento IA ── -->
     <div class="slide" id="s3">
-      <div><div class="eyebrow">03 — Actores legales</div><h1 class="h1">Los tres roles del circuito SIMEL</h1></div>
-      <div class="actor-grid">
-        <div class="actor">
-          <div class="actor-initial">G</div>
-          <div class="actor-role">Generador</div>
-          <div class="actor-desc">Clientes de AMSA — YPF, Zuccardi, CNEA y 297 más. Emite el residuo.</div>
-          <div class="actor-caa">CAA G-xxxxxx</div>
-        </div>
-        <div class="actor amsa">
-          <div class="actor-initial">T</div>
-          <div class="actor-role">Transportista</div>
-          <div class="actor-desc">AMSA con flota propia o tercero habilitado. Mueve el residuo.</div>
-          <div class="actor-caa">CAA T-00051</div>
-          <div style="margin-top:6px"><span class="badge badge-neu">AMSA</span></div>
-        </div>
-        <div class="actor amsa">
-          <div class="actor-initial">O</div>
-          <div class="actor-role">Operador</div>
-          <div class="actor-desc">Planta AMSA en San Francisco del Monte. Recepciona y procesa.</div>
-          <div class="actor-caa">CAA O-00080</div>
-          <div style="margin-top:6px"><span class="badge badge-neu">AMSA</span></div>
-        </div>
+      <div>
+        <div class="eye">Paso 2</div>
+        <h1 class="h1">Reconocimiento IA del certificado</h1>
       </div>
-      <div class="insight">
-        <div class="insight-text"><strong>Ventaja operativa:</strong> AMSA controla 2 de los 3 votos en SIMEL (T + O). Solo necesita que el cliente Generador apruebe. n8n envía ese link automáticamente en cuanto el manifiesto está cargado — sin intervención del equipo.</div>
+      <p class="body">GPT-4o-mini extrae todos los campos del CAA automáticamente. Sin tipeo manual. El prompt ya existe en el JSON — solo falta corregir el role y conectar el output.</p>
+      <div class="tbl-wrap">
+        <div class="tbl-head"><div class="tbl-dot"></div><span class="tbl-title">Campos extraídos automáticamente del PDF</span></div>
+        <table class="data-table">
+          <tr><th>Campo</th><th>Valor extraído</th><th>Campo</th><th>Valor extraído</th></tr>
+          <tr><td>Razón social</td><td class="muted">YPF S.A.</td><td>CUIT</td><td class="muted">30-54668099-3</td></tr>
+          <tr><td>Código G</td><td class="muted">G-00124</td><td>N° expediente</td><td class="muted">EXP-2024-0891</td></tr>
+          <tr><td>Vencimiento CAA</td><td class="muted">31/03/2026</td><td>Corrientes</td><td class="muted">Y8 · Y9 · Y48</td></tr>
+        </table>
+      </div>
+      <div class="chip-row">
+        <div class="chip">📄 Extract from OCR del PDF</div>
+        <div class="chip">🤖 GPT-4o-mini — Corregir role: user</div>
+        <div class="chip">✅ Validación JSON — Campos obligatorios OK</div>
+      </div>
+      <div class="stags">
+        <span class="tag tag-s">Existe · requiere corrección</span>
+        <span class="badge b-wn">Corregir role: "assistant" → "user"</span>
       </div>
     </div>
 
-    <!-- SLIDE 4 -->
+    <!-- ── S4 · PASO 3 — Registro en Supabase ── -->
     <div class="slide" id="s4">
-      <div><div class="eyebrow">04 — Flujo n8n · Fase 1</div><h1 class="h1">Ciclo completo de un manifiesto</h1></div>
-      <div class="node-row">
-        <div class="node"><div class="node-box trigger">WH<div class="type-dot td-trigger"></div></div><div class="node-lbl"><b>Webhook</b><br>PDF CAA</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">AI<div class="type-dot td-ai"></div></div><div class="node-lbl"><b>GPT-4o</b><br>Extrae campos</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">DB<div class="type-dot td-db"></div></div><div class="node-lbl"><b>Supabase</b><br>INSERT cliente</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box trigger">FM<div class="type-dot td-trigger"></div></div><div class="node-lbl"><b>Formulario</b><br>Operador carga</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">OK<div class="type-dot td-db"></div></div><div class="node-lbl"><b>Valida CAA</b><br>Corriente + fecha</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">MSG<div class="type-dot td-wa"></div></div><div class="node-lbl"><b>Notifica</b><br>Link SIMEL</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">DB<div class="type-dot td-db"></div></div><div class="node-lbl"><b>Supabase</b><br>UPDATE estado</div></div>
-        <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
-        <div class="node"><div class="node-box">PDF<div class="type-dot td-out"></div></div><div class="node-lbl"><b>Drive</b><br>Archiva final</div></div>
+      <div>
+        <div class="eye">Paso 3</div>
+        <h1 class="h1">Registro y validación en Supabase</h1>
       </div>
-      <div class="step-list">
-        <div class="step">
-          <div class="step-left"><div class="step-num">1</div><div class="step-line"></div></div>
-          <div class="step-body"><div class="step-title">PDF del CAA → n8n extrae con GPT-4o-mini</div><div class="step-sub">Parsea razón social, CUIT, código G, vencimiento, corrientes habilitadas → INSERT en tabla clientes de Supabase</div><div class="step-badges"><span class="badge badge-warn">Existe · corregir role OpenAI</span><span class="badge badge-warn">Agregar INSERT</span></div></div>
+      <p class="body">n8n guarda el actor en la tabla correspondiente según su tipo (cliente=generador, transportista, o confirma datos propios de AMSA como operador). Valida que el CAA esté vigente antes de habilitar operaciones.</p>
+      <div class="g2">
+        <div class="card">
+          <div class="card-ttl">INSERT clientes</div>
+          <div class="card-sub">Generador en Supabase — razón social, CUIT, código G, corrientes, vencimiento</div>
+          <div class="stags" style="margin-top:8px"><span class="tag tag-s">Nuevo a construir</span></div>
         </div>
-        <div class="step">
-          <div class="step-left"><div class="step-num">2</div><div class="step-line"></div></div>
-          <div class="step-body"><div class="step-title">Operador carga el manifiesto en formulario web</div><div class="step-sub">Selecciona cliente, corriente Y, cantidad, transportista. n8n valida CAA vigente y genera borrador AMSA-2026-XXXX</div><div class="step-badges"><span class="badge badge-neu">Nuevo — Fase 1</span></div></div>
+        <div class="card">
+          <div class="card-ttl">INSERT transportistas</div>
+          <div class="card-sub">Con patentes y contratos — migración del Excel de Tinch a Supabase</div>
+          <div class="stags" style="margin-top:8px"><span class="tag tag-s">Nuevo a construir</span></div>
         </div>
-        <div class="step">
-          <div class="step-left"><div class="step-num">3</div><div class="step-line"></div></div>
-          <div class="step-body"><div class="step-title">n8n envía link de aprobación SIMEL al Generador</div><div class="step-sub">AMSA pre-aprueba desde roles T+O. Solo falta el Generador. El link va por email o canal de mensajería.</div><div class="step-badges"><span class="badge badge-neu">Nuevo — Fase 1</span></div></div>
+        <div class="card">
+          <div class="card-ttl">Validación vigencia vencimiento</div>
+          <div class="card-sub">Alerta automática si CAA vence en menos de 30 días. Bloqueo si ya venció.</div>
+          <div class="stags" style="margin-top:8px"><span class="tag tag-m">Automático</span></div>
         </div>
-        <div class="step">
-          <div class="step-left"><div class="step-num">4</div><div class="step-line"></div></div>
-          <div class="step-body"><div class="step-title">Generador aprueba en SIMEL → número oficial</div><div class="step-sub">SIMEL asigna número. n8n genera PDF final, archiva en Google Drive y notifica al transportista.</div><div class="step-badges"><span class="badge badge-info">SIMEL webhook</span></div></div>
-        </div>
-        <div class="step">
-          <div class="step-left"><div class="step-num">5</div></div>
-          <div class="step-body"><div class="step-title">Transportista confirma retiro y entrega</div><div class="step-sub">Foto + cantidad real + novedad. n8n actualiza Supabase: borrador → emitido → en tránsito → entregado.</div><div class="step-badges"><span class="badge badge-ok">Trazabilidad completa</span></div></div>
+        <div class="card">
+          <div class="card-ttl">Alerta 30/15/7 días</div>
+          <div class="card-sub">n8n envía notificación al gerente y al cliente antes del vencimiento del CAA.</div>
+          <div class="stags" style="margin-top:8px"><span class="tag tag-m">Automático</span></div>
         </div>
       </div>
     </div>
 
-    <!-- SLIDE 5 — layout dedicado, chat visible -->
-    <div class="slide" id="s5">
-      <div class="s5-header">
-        <div class="eyebrow">05 — Canal de comunicación · Fase 1</div>
-        <h1 class="h1">WhatsApp Business como canal inicial</h1>
+    <!-- ── S5 · PASO 4 — Emisión manifiesto ── -->
+    <div class="slide" id="s5_em">
+      <div>
+        <div class="eye">Paso 4</div>
+        <h1 class="h1">Emisión del manifiesto — flujo interno completo</h1>
       </div>
-      <p class="s5-desc">Para la Fase 1 proponemos WhatsApp Business API como canal de notificaciones y confirmaciones, evitando el desarrollo de una PWA. En Fase 2 se reemplaza con app nativa si el equipo lo requiere.</p>
+      <p class="body">El operador de AMSA carga el manifiesto en el formulario web. n8n valida automáticamente los tres actores (generador habilitado, corriente autorizada, vehículo asignado), genera el número interno y emite el PDF.</p>
+      <div class="node-row">
+        <div class="node"><div class="nbox hi">FM<div class="ndot nd-t"></div></div><div class="nlbl"><b>Formulario</b><br>web</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox">3✓<div class="ndot nd-d"></div></div><div class="nlbl"><b>Validación</b><br>triple</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox">N°<div class="ndot nd-d"></div></div><div class="nlbl"><b>Numeración</b><br>interna</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox hi">PDF<div class="ndot nd-t"></div></div><div class="nlbl"><b>Genera</b><br>PDF</div></div>
+        <div class="arr"><div class="aline"></div><div class="ahead"></div></div>
+        <div class="node"><div class="nbox">DB<div class="ndot nd-d"></div></div><div class="nlbl"><b>Supabase</b><br>borrador</div></div>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-ttl">Formulario web — 3 actores autocompletados</div>
+          <div class="card-sub">Cliente, corriente Y, cantidad, transportista. Datos desde Supabase — sin tipeo manual.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Validación triple — CAA · corriente · vehículo</div>
+          <div class="card-sub">n8n verifica vigencia, corriente autorizada y que el camión esté asignado antes de emitir.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Numeración AMSA-2026-XXXX</div>
+          <div class="card-sub">Número interno correlativo antes de subir a SIMEL para aprobación del Generador.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Generación PDF — Plantilla + QR trazabilidad</div>
+          <div class="card-sub">PDF listo para firma. QR vincula al estado en tiempo real en Supabase.</div>
+        </div>
+      </div>
+      <div class="stags">
+        <span class="tag tag-s">Nuevo a construir — Fase 1</span>
+        <span class="tag tag-m">Sin intervención manual</span>
+      </div>
+    </div>
+
+    <!-- ── S6 · PASO 5 — WhatsApp ── -->
+    <div class="slide" id="s6" style="overflow:hidden;gap:10px">
+      <div class="s5-hd">
+        <div class="eye">Paso 5</div>
+        <h1 class="h1">Notificación y confirmación por WhatsApp</h1>
+      </div>
+      <p class="s5-desc">El transportista recibe el manifiesto por WhatsApp y confirma retiro con foto + cantidad real. El cliente Generador recibe su copia en PDF. El gerente ve el estado en tiempo real sin ingresar al sistema.</p>
       <div class="s5-body">
-        <!-- izquierda: pros + limitaciones + proveedores -->
-        <div class="s5-col-left">
+        <div class="s5-left">
           <div>
-            <div class="col-label">Por qué funciona</div>
-            <ul class="list-plain">
-              <li><div class="bullet bullet-ok"></div>Cero instalación — todos tienen WhatsApp</li>
-              <li><div class="bullet bullet-ok"></div>n8n tiene nodo nativo WhatsApp Business</li>
-              <li><div class="bullet bullet-ok"></div>Transportista envía foto + cantidad por chat</li>
-              <li><div class="bullet bullet-ok"></div>Generador recibe link de aprobación SIMEL</li>
-              <li><div class="bullet bullet-ok"></div>Gerente recibe alertas en tiempo real</li>
+            <div class="slabel">Por qué WhatsApp en Fase 1</div>
+            <ul class="ul">
+              <li><div class="dot-b dot-ok"></div>Cero instalación — todos tienen WhatsApp</li>
+              <li><div class="dot-b dot-ok"></div>n8n tiene nodo nativo WhatsApp Business</li>
+              <li><div class="dot-b dot-ok"></div>Transportista envía foto + cantidad real</li>
+              <li><div class="dot-b dot-ok"></div>Generador recibe PDF automáticamente</li>
+              <li><div class="dot-b dot-ok"></div>Gerente recibe alertas de estado en tiempo real</li>
             </ul>
           </div>
           <div>
-            <div class="col-label">Limitaciones conocidas</div>
-            <ul class="list-plain">
-              <li><div class="bullet bullet-warn"></div>Requiere aprobación Meta via 360dialog (2–3 días)</li>
-              <li><div class="bullet bullet-warn"></div>Costo por conversación activa de 24hs</li>
-              <li><div class="bullet bullet-err"></div>Sin firma digital del cliente — solo mensaje</li>
-              <li><div class="bullet bullet-warn"></div>La firma en campo se agrega en Fase 2 con PWA</li>
-            </ul>
+            <div class="slabel">Nodos n8n involucrados</div>
+            <div class="chip-row" style="flex-direction:column;gap:5px">
+              <div class="chip"><span class="chip-icon">💬</span>WhatsApp n8n — 360dialog · nodo nativo</div>
+              <div class="chip"><span class="chip-icon">🗄️</span>UPDATE Supabase — Estado en tiempo real</div>
+            </div>
           </div>
-          <div class="provider-row">
-            <div class="prov"><div class="prov-name">360dialog</div><div class="prov-detail">Económico · rápido</div></div>
-            <div class="prov"><div class="prov-name">Twilio</div><div class="prov-detail">Robusto · estable</div></div>
-            <div class="prov"><div class="prov-name">Meta Direct</div><div class="prov-detail">Sin intermediario</div></div>
+          <div class="prov-row">
+            <div class="prov"><div class="prov-n">360dialog</div><div class="prov-d">Económico · rápido</div></div>
+            <div class="prov"><div class="prov-n">Twilio</div><div class="prov-d">Robusto · estable</div></div>
+            <div class="prov"><div class="prov-n">Meta Direct</div><div class="prov-d">Sin intermediario</div></div>
           </div>
         </div>
-        <!-- derecha: chat que ocupa todo el espacio restante -->
-        <div class="s5-col-right">
-          <div class="col-label">Flujo del transportista</div>
-          <div class="chat-mock">
+        <div class="s5-right">
+          <div class="slabel">Conversación transportista</div>
+          <div class="chat">
             <div class="chat-hdr">
-              <div class="chat-avatar">A</div>
-              <div>
-                <div class="chat-name">AMSA Sistema</div>
-                <div class="chat-status">bot · en línea</div>
-              </div>
+              <div class="chat-av">A</div>
+              <div><div class="chat-name">AMSA Sistema</div><div class="chat-st">bot · en línea</div></div>
             </div>
             <div class="chat-msgs">
-              <div class="msg-in">
-                <div class="bubble bubble-in">Tenés retiro pendiente: <strong>YPF Refinería — Y8 · 1.200L</strong><br>Ruta 40 km 1088, Luján de Cuyo.<br>Respondé <strong>LISTO</strong> para confirmar.</div>
-                <div class="msg-time">09:00</div>
-              </div>
-              <div class="msg-out">
-                <div class="bubble bubble-out">LISTO</div>
-                <div class="msg-time">09:03</div>
-              </div>
-              <div class="msg-in">
-                <div class="bubble bubble-in">Retiro confirmado. Enviá foto del residuo y la cantidad real retirada en litros.</div>
-                <div class="msg-time">09:03</div>
-              </div>
-              <div class="msg-out">
-                <div class="bubble bubble-out">1180 litros</div>
-                <div class="msg-time">09:47</div>
-              </div>
-              <div class="msg-in">
-                <div class="bubble bubble-in">Registrado. Manifiesto <strong>AMSA-2026-0241</strong> actualizado. Al llegar a planta respondé <strong>ENTREGA</strong>.</div>
-                <div class="msg-time">09:47</div>
-              </div>
+              <div class="mi"><div class="bub bi">📋 AMSA · Manifiesto <strong>AMSA-2026-0241</strong><br><strong>YPF Refinería · Y8 · 1.200 L</strong><br>Ruta 40 km 1088 · hoy 09:00 hs<br>Respondé <strong>LISTO</strong> para confirmar.</div><div class="bt">09:00</div></div>
+              <div class="mo"><div class="bub bo">LISTO</div><div class="bt">09:03</div></div>
+              <div class="mi"><div class="bub bi">✅ Confirmado. Al retirar enviá foto + litros reales.</div><div class="bt">09:03</div></div>
+              <div class="mo"><div class="bub bo">📷 [foto] · 1.175 litros</div><div class="bt">09:51</div></div>
+              <div class="mi"><div class="bub bi">📋 Registrado. Estado: en tránsito.<br>Al llegar a planta respondé <strong>ENTREGA</strong>.</div><div class="bt">09:51</div></div>
+              <div class="mo"><div class="bub bo">ENTREGA</div><div class="bt">14:22</div></div>
+              <div class="mi"><div class="bub bi">✅ Manifiesto cerrado. PDF enviado al cliente.</div><div class="bt">14:22</div></div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- SLIDE 6 -->
-    <div class="slide" id="s6">
-      <div><div class="eyebrow">06 — Stack tecnológico</div><h1 class="h1">Servicios e infraestructura</h1></div>
-      <div class="stack-list">
-        <div class="stack-row"><div class="stack-icon">VPS</div><div><div class="stack-name">Hostinger KVM 1</div><div class="stack-role">Servidor n8n self-hosted — 4 GB RAM, 2 vCPU</div></div></div>
-        <div class="stack-row"><div class="stack-icon">n8n</div><div><div class="stack-name">n8n Self-Hosted</div><div class="stack-role">Motor de automatización — orquesta todos los flujos</div></div></div>
-        <div class="stack-row"><div class="stack-icon">DB</div><div><div class="stack-name">Supabase</div><div class="stack-role">PostgreSQL + dashboard visual en tiempo real para el gerente</div></div></div>
-        <div class="stack-row"><div class="stack-icon">WA</div><div><div class="stack-name">WhatsApp Business API</div><div class="stack-role">Transportistas + clientes Generadores — Fase 1</div></div></div>
-        <div class="stack-row"><div class="stack-icon">AI</div><div><div class="stack-name">OpenAI GPT-4o-mini</div><div class="stack-role">Parseo de PDFs de CAA — credenciales activas en AMSA</div></div></div>
-        <div class="stack-row"><div class="stack-icon">GD</div><div><div class="stack-name">Google Drive + Gmail</div><div class="stack-role">Archivo de manifiestos y CAAs — envío automático al cliente</div></div></div>
+    <!-- ── S7 · PASO 6 — Cierre y trazabilidad ── -->
+    <div class="slide" id="s7">
+      <div>
+        <div class="eye">Paso 6</div>
+        <h1 class="h1">Cierre y trazabilidad — el sistema actúa como SIMEL propio</h1>
+      </div>
+      <p class="body">Al cerrar el viaje, n8n genera el certificado de recepción, archiva en Google Drive, actualiza Supabase y agrega el evento de trazabilidad. El historial completo queda disponible para consulta del gerente y reportes al CPA.</p>
+      <div class="g2">
+        <div class="card">
+          <div class="card-ttl">Cert. recepción PDF</div>
+          <div class="card-sub">Cantidad real confirmada. Generado automáticamente y enviado al cliente Generador.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Google Drive</div>
+          <div class="card-sub">PDF por cliente · año. Organizado automáticamente por n8n al cerrar el manifiesto.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Eventos de trazabilidad</div>
+          <div class="card-sub">Cada estado queda registrado en Supabase con timestamp. Auditable en cualquier momento.</div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Reporte CPA</div>
+          <div class="card-sub">Mensual automático. n8n genera resumen de manifiestos y lo envía por email al contador.</div>
+        </div>
+      </div>
+      <div class="stags">
+        <span class="tag tag-m">Sin intervención manual</span>
+        <span class="tag tag-s">Sistema propio tipo SIMEL</span>
       </div>
     </div>
 
-    <!-- SLIDE 7 -->
-    <div class="slide" id="s7">
-      <div><div class="eyebrow">07 — Hoja de ruta</div><h1 class="h1">Plan de implementación</h1></div>
-      <div class="rm-phases">
+    <!-- ── S8 · STACK ── -->
+    <div class="slide" id="s8">
+      <div>
+        <div class="eye">08 — Stack tecnológico</div>
+        <h1 class="h1">Servicios e infraestructura</h1>
+      </div>
+      <div class="stack-list">
+        <div class="srow"><div class="sico">VPS</div><div><div class="sname">Hostinger KVM 1</div><div class="srole">Servidor n8n self-hosted — 4 GB RAM, 2 vCPU</div></div></div>
+        <div class="srow"><div class="sico">n8n</div><div><div class="sname">n8n Self-Hosted</div><div class="srole">Motor de automatización — orquesta todos los flujos y nodos</div></div></div>
+        <div class="srow"><div class="sico">DB</div><div><div class="sname">Supabase</div><div class="srole">PostgreSQL + dashboard visual en tiempo real para el gerente</div></div></div>
+        <div class="srow"><div class="sico">WA</div><div><div class="sname">WhatsApp Business API — 360dialog</div><div class="srole">Transportistas + clientes Generadores — canal Fase 1</div></div></div>
+        <div class="srow"><div class="sico">AI</div><div><div class="sname">OpenAI GPT-4o-mini</div><div class="srole">Parseo de PDFs de CAA — credenciales activas en AMSA</div></div></div>
+        <div class="srow"><div class="sico">GD</div><div><div class="sname">Google Drive + Gmail</div><div class="srole">Archivo de manifiestos y CAAs — envío automático al cliente</div></div></div>
+      </div>
+    </div>
+
+    <!-- ── S9 · ROADMAP ── -->
+    <div class="slide" id="s9">
+      <div>
+        <div class="eye">09 — Hoja de ruta</div>
+        <h1 class="h1">Plan de implementación</h1>
+      </div>
+      <div class="rm-list">
         <div class="rm">
           <div class="rm-head"><span class="rm-name">Fase 1 — Consolidar base</span><span class="rm-dur">1 semana</span></div>
           <div class="rm-items">
@@ -519,9 +610,9 @@ html, body {
           <div class="rm-head"><span class="rm-name">Fase 2 — Manifiestos + notificaciones</span><span class="rm-dur">2–3 semanas</span></div>
           <div class="rm-items">
             <div class="rm-item"><div class="rm-dot"></div>Formulario web emisión de manifiestos</div>
-            <div class="rm-item"><div class="rm-dot"></div>Validación CAA + numeración interna</div>
-            <div class="rm-item"><div class="rm-dot"></div>Notificación: link aprobación al Generador</div>
-            <div class="rm-item"><div class="rm-dot"></div>Flujo retiro/entrega transportista</div>
+            <div class="rm-item"><div class="rm-dot"></div>Validación triple CAA · corriente · vehículo</div>
+            <div class="rm-item"><div class="rm-dot"></div>Notificación link aprobación al Generador</div>
+            <div class="rm-item"><div class="rm-dot"></div>Flujo retiro/entrega transportista WhatsApp</div>
             <div class="rm-item"><div class="rm-dot"></div>Generación PDF + Google Drive</div>
             <div class="rm-item"><div class="rm-dot"></div>Alertas Telegram al gerente</div>
           </div>
@@ -542,54 +633,46 @@ html, body {
 
   </div><!-- /stage -->
 
+  <!-- BOTTOM BAR -->
   <div class="bottombar">
     <div class="dots" id="dots"></div>
-    <div class="bbar-gap"></div>
-    <button class="nbtn" onclick="move(-1)">← Anterior</button>
-    <button class="nbtn nbtn-primary" onclick="move(1)">Siguiente →</button>
+    <div class="bgap"></div>
+    <button class="btn" onclick="move(-1)">← Anterior</button>
+    <button class="btn btn-p" onclick="move(1)">Siguiente →</button>
   </div>
 
-</div><!-- /shell -->
-
+</div>
 <script>
-let cur = 0, tot = 7;
-const slides = document.querySelectorAll('.slide');
-
-function buildDots() {
-  const c = document.getElementById('dots');
-  c.innerHTML = '';
-  for (let i = 0; i < tot; i++) {
-    const d = document.createElement('button');
-    d.className = 'dot' + (i === cur ? ' a' : '');
-    d.setAttribute('aria-label', 'Ir a slide ' + (i + 1));
-    d.onclick = () => go(i);
-    c.appendChild(d);
+let cur=0,tot=9;
+const slides=document.querySelectorAll('.slide');
+function buildDots(){
+  const c=document.getElementById('dots');c.innerHTML='';
+  for(let i=0;i<tot;i++){
+    const d=document.createElement('button');
+    d.className='dot'+(i===cur?' a':'');
+    d.setAttribute('aria-label','Slide '+(i+1));
+    d.onclick=()=>go(i);c.appendChild(d);
   }
 }
-
-function go(n) {
+function go(n){
   slides[cur].classList.remove('active');
-  cur = (n + tot) % tot;
+  cur=(n+tot)%tot;
   slides[cur].classList.add('active');
-  slides[cur].scrollTop = 0;
-  document.getElementById('counter').textContent = (cur + 1) + ' / ' + tot;
+  slides[cur].scrollTop=0;
+  document.getElementById('counter').textContent=(cur+1)+' / '+tot;
   buildDots();
 }
-
-function move(d) { go(cur + d); }
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') move(1);
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   move(-1);
+function move(d){go(cur+d);}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown')move(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp')move(-1);
 });
-
-let tx = 0;
-document.querySelector('.stage').addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
-document.querySelector('.stage').addEventListener('touchend', e => {
-  const dx = e.changedTouches[0].clientX - tx;
-  if (Math.abs(dx) > 48) move(dx < 0 ? 1 : -1);
+let tx=0;
+document.querySelector('.stage').addEventListener('touchstart',e=>{tx=e.touches[0].clientX;},{passive:true});
+document.querySelector('.stage').addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>48)move(dx<0?1:-1);
 });
-
 buildDots();
 </script>
 </body>
